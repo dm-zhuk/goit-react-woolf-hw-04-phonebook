@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { nanoid } from 'nanoid';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
 import { Container, Title, SubTitle } from './index';
 import ContactForm from 'components/ContactForm/ContactForm';
 import ContactList from 'components/ContactList/ContactList';
@@ -14,7 +16,7 @@ const App = () => {
       contact => contact.name.toLowerCase() === name.toLowerCase()
     );
     if (isExist) {
-      alert(`🚫 ${name} is already in contacts!`);
+      toast.warning(`🚫 ${name} is already in contacts!`);
       return;
     }
     const newContact = { id: nanoid(), name, number };
@@ -30,6 +32,10 @@ const App = () => {
   const handleFilterChange = evt => {
     setFilter(evt.target.value);
   };
+
+  const filteredContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(filter)
+  );
 
   //  `useEffect` - instead od prev React components Lifecycle Methods -didMount,-didUpdate
   //  `useEffect` hook is used to load the contacts from local storage when the component mounts and save the contacts to local storage whenever the contacts state changes
@@ -47,11 +53,15 @@ const App = () => {
 
   return (
     <Container>
+      <ToastContainer />
       <Title>✆ Phonebook ✆</Title>
       <ContactForm onAddContact={handleAddContact} />
       <SubTitle>Contacts</SubTitle>
       <Filter value={filter} onChange={handleFilterChange} />
-      <ContactList contacts={contacts} onDeleteContact={handleDeleteContact} />
+      <ContactList
+        contacts={filteredContacts}
+        onDeleteContact={handleDeleteContact}
+      />
     </Container>
   );
 };
