@@ -8,15 +8,32 @@ import ContactList from 'components/ContactList/ContactList';
 import Filter from 'components/Filter/Filter';
 
 const App = () => {
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState(() => {
+    const localStorageContacts = localStorage.getItem('contacts');
+    return JSON.parse(localStorageContacts) || [];
+  }); // by passing ⨐ to `useState` we can lazily initialize the state with the parsed data from localStorage. This eliminates the need for the `useEffect` with the empty dependencies array
+  /* useEffect(() => {
+    const localStorageContacts = localStorage.getItem('contacts');
+    const parsedContacts = localStorageContacts
+      ? JSON.parse(localStorageContacts)
+      : [];
+    setContacts(parsedContacts);
+  }, []); */
+
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
+
   const [filter, setFilter] = useState('');
 
   const handleAddContact = (name, number) => {
     const isExist = contacts.some(
-      contact => contact.name.toLowerCase() === name.toLowerCase()
+      contact =>
+        contact.name.toLowerCase() === name.toLowerCase() ||
+        contact.number === number
     );
     if (isExist) {
-      toast.warning(`🚫 ${name} is already in contacts!`);
+      toast.warning(`${name} or tel. ${number} is already in contacts list!`);
       return;
     }
     const newContact = { id: nanoid(), name, number };
@@ -36,20 +53,6 @@ const App = () => {
   const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(filter)
   );
-
-  //  `useEffect` - instead od prev React components Lifecycle Methods -didMount,-didUpdate
-  //  `useEffect` hook is used to load the contacts from local storage when the component mounts and save the contacts to local storage whenever the contacts state changes
-  useEffect(() => {
-    const localStorageContacts = localStorage.getItem('contacts');
-    const parsedContacts = localStorageContacts
-      ? JSON.parse(localStorageContacts)
-      : [];
-    setContacts(parsedContacts);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts]);
 
   return (
     <Container>
